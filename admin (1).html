@@ -1,0 +1,646 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#111111" />
+  <title>Panel de lealtad</title>
+  <style>
+    :root{
+      --bg:#f3f1ea;
+      --card:#ffffff;
+      --ink:#151515;
+      --muted:#73736c;
+      --line:#e7e4da;
+      --accent:#8B9274;
+      --danger:#9b2c2c;
+      --ok:#386641;
+      --shadow:0 18px 50px rgba(16,16,16,.08);
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    button,input{font:inherit}
+    button{cursor:pointer}
+    .hidden{display:none!important}
+    .shell{width:min(1180px,calc(100% - 28px));margin:0 auto;padding:22px 0 46px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .mark{width:46px;height:46px;border-radius:15px;background:#111;color:white;display:grid;place-items:center;font-size:22px;overflow:hidden}.mark img{width:100%;height:100%;object-fit:cover;display:block}
+    .brand h1{font-size:18px;margin:0;font-weight:850;letter-spacing:-.02em}
+    .brand p{font-size:12px;margin:3px 0 0;color:var(--muted)}
+    .top-actions{display:flex;gap:8px;align-items:center}
+    .business-switcher{border:1px solid var(--line);border-radius:999px;background:#fff;padding:7px 10px;font-size:12px;font-weight:750;color:#333;max-width:220px;outline:none}
+    .pill{padding:7px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--muted);font-size:12px;font-weight:750}
+    .btn{border:0;border-radius:12px;padding:11px 14px;font-weight:800;background:#111;color:#fff}
+    .btn.secondary{background:#fff;color:#111;border:1px solid var(--line)}
+    .btn.ghost{background:transparent;color:#111;border:1px solid var(--line)}
+    .btn.danger{background:#fff;color:var(--danger);border:1px solid #ecd1d1}
+    .btn.small{padding:8px 10px;border-radius:10px;font-size:12px}
+    .btn:disabled{opacity:.45;cursor:not-allowed}
+    .login-wrap{min-height:72vh;display:grid;place-items:center}
+    .login-card{width:min(100%,420px);background:#fff;border:1px solid var(--line);border-radius:24px;padding:28px;box-shadow:var(--shadow)}
+    .login-card h2{margin:0 0 7px;font-size:26px;letter-spacing:-.03em}
+    .login-card p{margin:0 0 22px;color:var(--muted);font-size:14px;line-height:1.45}
+    .field{display:grid;gap:7px;margin:0 0 14px}
+    .field label{font-size:12px;font-weight:800;color:#45453f}
+    .input{width:100%;border:1px solid var(--line);background:#fff;border-radius:12px;padding:12px 13px;outline:none;color:#111}
+    .input:focus{border-color:#aaa99f;box-shadow:0 0 0 3px rgba(139,146,116,.14)}
+    .login-error,.toast{font-size:13px;border-radius:12px;padding:11px 12px}
+    .login-error{margin-top:12px;background:#fff0f0;color:#8a1f1f;border:1px solid #f1d0d0}
+    .hero{display:grid;grid-template-columns:1.35fr .65fr;gap:16px;margin-bottom:16px}
+    .panel{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:0 8px 28px rgba(16,16,16,.04)}
+    .hero-main{padding:24px;position:relative;overflow:hidden}
+    .hero-main:after{content:"";position:absolute;width:210px;height:210px;border-radius:50%;right:-55px;top:-70px;background:var(--accent);opacity:.18}
+    .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:850}
+    .hero h2{margin:7px 0 4px;font-size:30px;letter-spacing:-.04em}
+    .hero .sub{color:var(--muted);font-size:14px;margin:0}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:22px;position:relative;z-index:1}
+    .stat{border:1px solid var(--line);background:#fbfaf6;border-radius:14px;padding:13px}
+    .stat b{font-size:22px;display:block}
+    .stat span{font-size:11px;color:var(--muted);font-weight:700}
+    .program-card{padding:20px;display:flex;flex-direction:column;justify-content:space-between}
+    .goal{font-size:34px;font-weight:900;letter-spacing:-.05em;margin:8px 0 0}
+    .reward{font-size:13px;color:var(--muted);line-height:1.4;margin-top:4px}
+    .toolbar{padding:14px;display:grid;grid-template-columns:1fr auto;gap:10px;margin-bottom:16px}
+    .search{position:relative}
+    .search .input{padding-left:39px}
+    .search:before{content:"⌕";position:absolute;left:14px;top:50%;transform:translateY(-52%);color:#777;font-size:20px}
+    .table-card{overflow:hidden}
+    .table-head{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .table-head h3{margin:0;font-size:15px}
+    .table-head span{font-size:12px;color:var(--muted)}
+    .rows{display:grid}
+    .customer{display:grid;grid-template-columns:minmax(170px,1.5fr) minmax(120px,.8fr) minmax(160px,.9fr) minmax(280px,1.5fr);align-items:center;gap:14px;padding:15px 18px;border-bottom:1px solid var(--line)}
+    .customer:last-child{border-bottom:0}
+    .who b{display:block;font-size:14px}
+    .who span{display:block;color:var(--muted);font-size:12px;margin-top:3px}
+    .progress-wrap{display:flex;align-items:center;gap:10px}
+    .progress-bar{height:8px;flex:1;background:#eceae2;border-radius:999px;overflow:hidden;min-width:80px}
+    .progress-bar i{display:block;height:100%;background:var(--accent);border-radius:999px}
+    .progress-wrap strong{font-size:12px;min-width:37px;text-align:right}
+    .status{display:inline-flex;align-items:center;gap:6px;width:max-content;padding:6px 9px;border-radius:999px;font-size:11px;font-weight:850;background:#f1f0ea;color:#555}
+    .status.ready{background:#e9f4e8;color:var(--ok)}
+    .actions{display:flex;justify-content:flex-end;gap:7px;flex-wrap:wrap}
+    .empty{padding:34px 18px;text-align:center;color:var(--muted);font-size:14px}
+    .loading{padding:34px 18px;text-align:center;color:var(--muted);font-size:14px}
+    .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.44);display:grid;place-items:center;padding:18px;z-index:50}
+    .modal{width:min(100%,500px);background:#fff;border-radius:22px;padding:22px;box-shadow:0 28px 80px rgba(0,0,0,.28);max-height:90vh;overflow:auto}
+    .modal h3{margin:0 0 5px;font-size:21px}
+    .modal .desc{color:var(--muted);font-size:13px;margin:0 0 18px}
+    .modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:18px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .toast{position:fixed;right:18px;bottom:18px;z-index:80;background:#111;color:#fff;box-shadow:0 18px 40px rgba(0,0,0,.2);max-width:min(360px,calc(100% - 36px))}
+    .toast.error{background:#8a1f1f}
+    .section-title{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin:0 0 10px}
+    .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+    .settings-card{padding:18px}
+    .settings-card h3{margin:0 0 14px;font-size:15px}
+    .help{font-size:11px;color:var(--muted);line-height:1.45;margin-top:8px}
+    @media (max-width:900px){
+      .hero{grid-template-columns:1fr}
+      .customer{grid-template-columns:1fr 1fr}
+      .actions{grid-column:1/-1;justify-content:flex-start}
+    }
+    @media (max-width:620px){
+      .shell{width:min(100% - 18px,1180px);padding-top:12px}
+      .topbar{align-items:flex-start}
+      .top-actions{flex-direction:column;align-items:flex-end}
+      .business-switcher{max-width:170px}
+      .pill{display:none}
+      .stats{grid-template-columns:1fr 1fr 1fr}
+      .stat{padding:11px}
+      .stat b{font-size:18px}
+      .toolbar{grid-template-columns:1fr}
+      .customer{grid-template-columns:1fr;gap:10px;padding:15px}
+      .actions{grid-column:auto;justify-content:flex-start}
+      .grid2,.settings-grid{grid-template-columns:1fr}
+      .hero-main{padding:20px}
+      .hero h2{font-size:25px}
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section id="loginView" class="login-wrap">
+      <form id="loginForm" class="login-card">
+        <div class="mark" style="margin-bottom:16px">👜</div>
+        <h2>Panel de lealtad</h2>
+        <p>Inicia sesión para administrar clientes, sellos y recompensas.</p>
+        <div class="field">
+          <label for="email">Correo</label>
+          <input id="email" class="input" type="email" autocomplete="username" required placeholder="correo@negocio.com" />
+        </div>
+        <div class="field">
+          <label for="password">Contraseña</label>
+          <input id="password" class="input" type="password" autocomplete="current-password" required placeholder="••••••••" />
+        </div>
+        <button id="loginBtn" class="btn" style="width:100%" type="submit">Entrar</button>
+        <div id="loginError" class="login-error hidden"></div>
+      </form>
+    </section>
+
+    <section id="appView" class="hidden">
+      <header class="topbar">
+        <div class="brand">
+          <div class="mark" id="businessLogoMark">👜</div>
+          <div>
+            <h1 id="businessName">Tote y Punto</h1>
+            <p>Panel de administración de lealtad</p>
+          </div>
+        </div>
+        <div class="top-actions">
+          <select id="businessSwitcher" class="business-switcher hidden" aria-label="Cambiar negocio"></select>
+          <span id="roleBadge" class="pill">—</span>
+          <button id="logoutBtn" class="btn secondary small">Cerrar sesión</button>
+        </div>
+      </header>
+
+      <section class="hero">
+        <div class="panel hero-main">
+          <div class="eyebrow">Resumen</div>
+          <h2 id="welcomeTitle">Clientes frecuentes</h2>
+          <p class="sub">Registra una compra y la tarjeta del cliente se actualiza automáticamente.</p>
+          <div class="stats">
+            <div class="stat"><b id="statCustomers">0</b><span>Clientes</span></div>
+            <div class="stat"><b id="statReady">0</b><span>Premios listos</span></div>
+            <div class="stat"><b id="statStamps">0</b><span>Sellos activos</span></div>
+          </div>
+        </div>
+        <div class="panel program-card">
+          <div>
+            <div class="eyebrow">Programa actual</div>
+            <div id="programGoal" class="goal">5 compras</div>
+            <div id="programReward" class="reward">15% de descuento en tu siguiente tote</div>
+          </div>
+          <button id="editProgramBtn" class="btn secondary" style="margin-top:18px">Editar programa</button>
+        </div>
+      </section>
+
+      <section class="panel toolbar">
+        <div class="search"><input id="searchInput" class="input" placeholder="Buscar por nombre, teléfono o correo…" /></div>
+        <button id="newCustomerBtn" class="btn">+ Nuevo cliente</button>
+      </section>
+
+      <section class="panel table-card">
+        <div class="table-head">
+          <h3>Clientes</h3>
+          <span id="resultCount">0 registros</span>
+        </div>
+        <div id="customerRows" class="rows"><div class="loading">Cargando clientes…</div></div>
+      </section>
+
+      <section class="settings-grid">
+        <div class="panel settings-card">
+          <div class="section-title">Personalización</div>
+          <h3>Colores del negocio</h3>
+          <div class="grid2">
+            <div class="field"><label>Color principal</label><input id="primaryColor" class="input" type="color" value="#8B9274" /></div>
+            <div class="field"><label>Color secundario</label><input id="secondaryColor" class="input" type="color" value="#111111" /></div>
+          </div>
+          <button id="saveColorsBtn" class="btn secondary">Guardar colores</button>
+          <div class="help">Estos colores también se aplican a la tarjeta digital del cliente.</div>
+        </div>
+        <div class="panel settings-card">
+          <div class="section-title">Cómo funciona</div>
+          <h3>Tarjetas individuales</h3>
+          <div class="help">Cada cliente tiene un enlace único. El negocio registra la compra aquí y la tarjeta refleja el nuevo avance al abrirse o actualizarse.</div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div id="customerModal" class="modal-bg hidden">
+    <form id="customerForm" class="modal">
+      <h3>Nuevo cliente</h3>
+      <p class="desc">Al guardarlo se creará automáticamente su tarjeta de lealtad.</p>
+      <div class="field"><label>Nombre *</label><input id="customerName" class="input" required /></div>
+      <div class="grid2">
+        <div class="field"><label>Teléfono *</label><input id="customerPhone" class="input" required inputmode="tel" /></div>
+        <div class="field"><label>Correo</label><input id="customerEmail" class="input" type="email" /></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn secondary" data-close="customerModal">Cancelar</button>
+        <button id="saveCustomerBtn" type="submit" class="btn">Crear cliente</button>
+      </div>
+    </form>
+  </div>
+
+  <div id="programModal" class="modal-bg hidden">
+    <form id="programForm" class="modal">
+      <h3>Editar programa</h3>
+      <p class="desc">Cambios aplican a todas las tarjetas de este programa.</p>
+      <div class="field"><label>Meta de compras/sellos</label><input id="editGoal" class="input" type="number" min="1" max="100" required /></div>
+      <div class="field"><label>Recompensa</label><input id="editReward" class="input" required /></div>
+      <div class="modal-actions">
+        <button type="button" class="btn secondary" data-close="programModal">Cancelar</button>
+        <button id="saveProgramBtn" type="submit" class="btn">Guardar cambios</button>
+      </div>
+    </form>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = 'https://oeovncqbdzqqrhmcwxud.supabase.co';
+    const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_JWHTwtIX9QYuJWXoGoAxsw_VFz47Ctw';
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+    const state = {
+      session:null,
+      profile:null,
+      businesses:[],
+      business:null,
+      program:null,
+      customers:[],
+      cards:[],
+      transactions:[],
+      rows:[]
+    };
+
+    const $ = id => document.getElementById(id);
+    const esc = (v='') => String(v).replace(/[&<>'"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[s]));
+    const normalizePhone = v => String(v || '').replace(/\D/g,'');
+
+    function toast(message, type='ok'){
+      const t = $('toast');
+      t.textContent = message;
+      t.className = 'toast' + (type === 'error' ? ' error' : '');
+      clearTimeout(toast.timer);
+      toast.timer = setTimeout(() => t.classList.add('hidden'), 3200);
+    }
+
+    function showModal(id){ $(id).classList.remove('hidden'); }
+    function hideModal(id){ $(id).classList.add('hidden'); }
+
+    async function signIn(email,password){
+      const { data, error } = await client.auth.signInWithPassword({ email, password });
+      if(error) throw error;
+      return data.session;
+    }
+
+    async function loadProfile(){
+      const uid = state.session?.user?.id;
+      if(!uid) throw new Error('No hay una sesión válida.');
+      const { data, error } = await client.from('profiles').select('id,business_id,full_name,role').eq('id', uid).single();
+      if(error) throw error;
+      state.profile = data;
+    }
+
+    async function loadBusinesses(){
+      if(state.profile.role !== 'master') return;
+      const { data, error } = await client.from('businesses')
+        .select('id,name,slug,primary_color,secondary_color,status')
+        .order('name', { ascending:true });
+      if(error) throw error;
+      state.businesses = data || [];
+      const sel = $('businessSwitcher');
+      sel.innerHTML = state.businesses.map(b => `<option value="${esc(b.id)}">${esc(b.name)}${b.status === 'suspended' ? ' · suspendido' : ''}</option>`).join('');
+      sel.classList.remove('hidden');
+    }
+
+    async function loadBusiness(businessId=null){
+      let query = client.from('businesses').select('*');
+      if(state.profile.role === 'master') {
+        const saved = localStorage.getItem('kreativo_selected_business');
+        const targetId = businessId || saved || state.businesses[0]?.id;
+        if(!targetId) throw new Error('No hay negocios registrados.');
+        query = query.eq('id', targetId);
+      } else {
+        query = query.eq('id', state.profile.business_id);
+      }
+      const { data, error } = await query.single();
+      if(error) throw error;
+      state.business = data;
+      if(state.profile.role === 'master') {
+        localStorage.setItem('kreativo_selected_business', data.id);
+        $('businessSwitcher').value = data.id;
+      }
+      document.documentElement.style.setProperty('--accent', data.primary_color || '#8B9274');
+      $('businessName').textContent = data.name;
+      const logoMark = $('businessLogoMark');
+      if(data.logo_url){
+        logoMark.innerHTML = `<img src="${esc(data.logo_url)}" alt="Logo de ${esc(data.name)}">`;
+      }else{
+        logoMark.textContent = '👜';
+      }
+      $('primaryColor').value = data.primary_color || '#8B9274';
+      $('secondaryColor').value = data.secondary_color || '#111111';
+      document.title = `Panel | ${data.name}`;
+    }
+
+    async function loadProgram(){
+      const { data, error } = await client.from('loyalty_programs')
+        .select('*')
+        .eq('business_id', state.business.id)
+        .eq('active', true)
+        .order('created_at', { ascending:true })
+        .limit(1)
+        .single();
+      if(error) throw error;
+      state.program = data;
+      renderProgram();
+    }
+
+    async function loadCustomers(){
+      $('customerRows').innerHTML = '<div class="loading">Cargando clientes…</div>';
+      const bid = state.business.id;
+      const [customersRes, cardsRes, txRes] = await Promise.all([
+        client.from('customers').select('id,full_name,phone,email,created_at').eq('business_id', bid).order('created_at',{ascending:false}),
+        client.from('loyalty_cards').select('id,customer_id,program_id,public_token,active,created_at').eq('business_id', bid),
+        client.from('loyalty_transactions').select('id,card_id,amount,movement_type,created_at').eq('business_id', bid)
+      ]);
+      if(customersRes.error) throw customersRes.error;
+      if(cardsRes.error) throw cardsRes.error;
+      if(txRes.error) throw txRes.error;
+      state.customers = customersRes.data || [];
+      state.cards = cardsRes.data || [];
+      state.transactions = txRes.data || [];
+      buildRows();
+      renderRows();
+    }
+
+    function buildRows(){
+      const cardByCustomer = new Map();
+      for(const card of state.cards){
+        if(card.program_id === state.program.id && card.active) cardByCustomer.set(card.customer_id, card);
+      }
+      const progressByCard = new Map();
+      for(const tx of state.transactions){
+        const prev = Number(progressByCard.get(tx.card_id) || 0);
+        progressByCard.set(tx.card_id, prev + Number(tx.amount || 0));
+      }
+      state.rows = state.customers.map(c => {
+        const card = cardByCustomer.get(c.id) || null;
+        const progress = card ? Math.max(0, Number(progressByCard.get(card.id) || 0)) : 0;
+        return { ...c, card, progress };
+      });
+      const goal = Number(state.program.goal || 1);
+      $('statCustomers').textContent = state.rows.length;
+      $('statReady').textContent = state.rows.filter(r => r.card && r.progress >= goal).length;
+      $('statStamps').textContent = state.rows.reduce((a,r) => a + Math.max(0, r.progress), 0);
+    }
+
+    function renderProgram(){
+      const goal = Number(state.program.goal || 0);
+      const unit = state.program.program_type === 'stamps' ? (goal === 1 ? 'sello' : 'sellos') : (goal === 1 ? 'compra' : 'compras');
+      $('programGoal').textContent = `${goal} ${unit}`;
+      $('programReward').textContent = state.program.reward_text || '—';
+      $('editGoal').value = goal;
+      $('editReward').value = state.program.reward_text || '';
+      const canEdit = ['master','owner'].includes(state.profile.role);
+      $('editProgramBtn').disabled = !canEdit;
+      $('saveColorsBtn').disabled = !canEdit;
+    }
+
+    function renderRows(){
+      const q = $('searchInput').value.trim().toLowerCase();
+      const rows = state.rows.filter(r => {
+        if(!q) return true;
+        return [r.full_name,r.phone,r.email].some(v => String(v||'').toLowerCase().includes(q));
+      });
+      $('resultCount').textContent = `${rows.length} ${rows.length === 1 ? 'registro' : 'registros'}`;
+      if(!rows.length){
+        $('customerRows').innerHTML = '<div class="empty">No hay clientes que coincidan con la búsqueda.</div>';
+        return;
+      }
+      const goal = Number(state.program.goal || 1);
+      $('customerRows').innerHTML = rows.map(r => {
+        const pct = Math.max(0, Math.min(100, (r.progress / goal) * 100));
+        const ready = r.progress >= goal;
+        const token = r.card?.public_token || '';
+        return `
+          <article class="customer" data-customer="${esc(r.id)}">
+            <div class="who">
+              <b>${esc(r.full_name)}</b>
+              <span>${esc(r.phone || 'Sin teléfono')}${r.email ? ' · ' + esc(r.email) : ''}</span>
+            </div>
+            <div class="progress-wrap">
+              <div class="progress-bar"><i style="width:${pct}%"></i></div>
+              <strong>${r.progress}/${goal}</strong>
+            </div>
+            <div><span class="status ${ready ? 'ready' : ''}">${ready ? '🎁 Premio listo' : 'En progreso'}</span></div>
+            <div class="actions">
+              <button class="btn small" data-action="add" data-card="${esc(r.card?.id || '')}" ${r.card ? '' : 'disabled'}>+1 sello</button>
+              <button class="btn secondary small" data-action="remove" data-card="${esc(r.card?.id || '')}" data-progress="${r.progress}" data-name="${esc(r.full_name)}" ${r.card && r.progress > 0 ? '' : 'disabled'}>− Quitar sello</button>
+              <button class="btn secondary small" data-action="view" data-token="${esc(token)}" ${token ? '' : 'disabled'}>Ver tarjeta</button>
+              <button class="btn secondary small" data-action="copy" data-token="${esc(token)}" ${token ? '' : 'disabled'}>Copiar enlace</button>
+              <button class="btn small" data-action="redeem" data-card="${esc(r.card?.id || '')}" data-progress="${r.progress}" ${ready ? '' : 'disabled'}>Canjear</button>
+            </div>
+          </article>`;
+      }).join('');
+    }
+
+    function cardUrl(token){
+      const url = new URL('index.html', window.location.href);
+      url.searchParams.set('token', token);
+      return url.toString();
+    }
+
+    async function addMovement(cardId, amount, movementType, note){
+      if(!cardId) throw new Error('La tarjeta no está disponible.');
+      const payload = {
+        business_id: state.business.id,
+        card_id: cardId,
+        amount,
+        movement_type: movementType,
+        note,
+        created_by: state.session.user.id
+      };
+      const { error } = await client.from('loyalty_transactions').insert(payload);
+      if(error) throw error;
+      await loadCustomers();
+    }
+
+    async function createCustomer({full_name,phone,email}){
+      const cleanPhone = normalizePhone(phone);
+      if(cleanPhone.length < 7) throw new Error('Escribe un teléfono válido.');
+      const { data:customer, error } = await client.from('customers').insert({
+        business_id: state.business.id,
+        full_name: full_name.trim(),
+        phone: cleanPhone,
+        email: email.trim() || null
+      }).select('id').single();
+      if(error) throw error;
+      const { error:cardError } = await client.from('loyalty_cards').insert({
+        business_id: state.business.id,
+        customer_id: customer.id,
+        program_id: state.program.id
+      });
+      if(cardError) throw cardError;
+      await loadCustomers();
+    }
+
+    async function saveProgram(goal,reward){
+      const { error } = await client.from('loyalty_programs').update({
+        goal:Number(goal),
+        reward_text:reward.trim()
+      }).eq('id', state.program.id);
+      if(error) throw error;
+      await loadProgram();
+      await loadCustomers();
+    }
+
+    async function saveColors(primary,secondary){
+      const { error } = await client.from('businesses').update({
+        primary_color:primary,
+        secondary_color:secondary
+      }).eq('id', state.business.id);
+      if(error) throw error;
+      await loadBusiness();
+      toast('Colores guardados.');
+    }
+
+    async function boot(){
+      const { data } = await client.auth.getSession();
+      state.session = data.session;
+      if(!state.session){
+        $('loginView').classList.remove('hidden');
+        $('appView').classList.add('hidden');
+        return;
+      }
+      $('loginView').classList.add('hidden');
+      $('appView').classList.remove('hidden');
+      try{
+        await loadProfile();
+        await loadBusinesses();
+        await loadBusiness();
+        await loadProgram();
+        $('roleBadge').textContent = state.profile.role === 'master' ? 'Kreativo · Master' : (state.profile.role === 'owner' ? 'Propietario' : 'Empleado');
+        $('welcomeTitle').textContent = state.business.name;
+        await loadCustomers();
+      }catch(err){
+        console.error(err);
+        toast(err.message || 'No se pudo cargar el panel.', 'error');
+      }
+    }
+
+    $('loginForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      $('loginError').classList.add('hidden');
+      $('loginBtn').disabled = true;
+      $('loginBtn').textContent = 'Entrando…';
+      try{
+        state.session = await signIn($('email').value.trim(), $('password').value);
+        await boot();
+      }catch(err){
+        $('loginError').textContent = err.message || 'No se pudo iniciar sesión.';
+        $('loginError').classList.remove('hidden');
+      }finally{
+        $('loginBtn').disabled = false;
+        $('loginBtn').textContent = 'Entrar';
+      }
+    });
+
+    $('logoutBtn').addEventListener('click', async () => {
+      await client.auth.signOut();
+      location.reload();
+    });
+
+    $('businessSwitcher').addEventListener('change', async e => {
+      if(state.profile?.role !== 'master') return;
+      $('businessSwitcher').disabled = true;
+      try{
+        await loadBusiness(e.target.value);
+        await loadProgram();
+        $('welcomeTitle').textContent = state.business.name;
+        await loadCustomers();
+        toast(`Ahora administras ${state.business.name}.`);
+      }catch(err){
+        toast(err.message || 'No se pudo cambiar de negocio.', 'error');
+      }finally{
+        $('businessSwitcher').disabled = false;
+      }
+    });
+
+    $('searchInput').addEventListener('input', renderRows);
+    $('newCustomerBtn').addEventListener('click', () => showModal('customerModal'));
+    $('editProgramBtn').addEventListener('click', () => showModal('programModal'));
+    document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => hideModal(b.dataset.close)));
+    document.querySelectorAll('.modal-bg').forEach(bg => bg.addEventListener('click', e => { if(e.target === bg) bg.classList.add('hidden'); }));
+
+    $('customerForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      $('saveCustomerBtn').disabled = true;
+      try{
+        await createCustomer({
+          full_name:$('customerName').value,
+          phone:$('customerPhone').value,
+          email:$('customerEmail').value
+        });
+        e.target.reset();
+        hideModal('customerModal');
+        toast('Cliente y tarjeta creados.');
+      }catch(err){
+        toast(err.message?.includes('customers_business_id_phone_key') ? 'Ese teléfono ya está registrado en este negocio.' : (err.message || 'No se pudo crear el cliente.'), 'error');
+      }finally{
+        $('saveCustomerBtn').disabled = false;
+      }
+    });
+
+    $('programForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      $('saveProgramBtn').disabled = true;
+      try{
+        await saveProgram($('editGoal').value, $('editReward').value);
+        hideModal('programModal');
+        toast('Programa actualizado.');
+      }catch(err){ toast(err.message || 'No se pudo actualizar.', 'error'); }
+      finally{ $('saveProgramBtn').disabled = false; }
+    });
+
+    $('saveColorsBtn').addEventListener('click', async () => {
+      $('saveColorsBtn').disabled = true;
+      try{ await saveColors($('primaryColor').value, $('secondaryColor').value); }
+      catch(err){ toast(err.message || 'No se pudieron guardar los colores.', 'error'); }
+      finally{ $('saveColorsBtn').disabled = false; }
+    });
+
+    $('customerRows').addEventListener('click', async e => {
+      const btn = e.target.closest('button[data-action]');
+      if(!btn) return;
+      const action = btn.dataset.action;
+      btn.disabled = true;
+      try{
+        if(action === 'add'){
+          await addMovement(btn.dataset.card, 1, 'earn', 'Compra registrada desde panel');
+          toast('Sello agregado.');
+        }
+        if(action === 'remove'){
+          const currentProgress = Number(btn.dataset.progress || 0);
+          if(currentProgress <= 0){
+            toast('Este cliente no tiene sellos para quitar.', 'error');
+            return;
+          }
+          const customerName = btn.dataset.name || 'este cliente';
+          const ok = confirm(`¿Quitar 1 sello a ${customerName}?\n\nSe registrará como ajuste manual en el historial.`);
+          if(!ok) return;
+          const oldText = btn.textContent;
+          btn.textContent = 'Quitando…';
+          await addMovement(btn.dataset.card, -1, 'adjustment', 'Sello retirado por corrección desde panel');
+          toast('Sello retirado correctamente.');
+          btn.textContent = oldText;
+        }
+        if(action === 'redeem'){
+          if(Number(btn.dataset.progress) < Number(state.program.goal)) return;
+          if(!confirm(`¿Canjear ${state.program.reward_text}? Se descontarán ${state.program.goal} sellos.`)) return;
+          await addMovement(btn.dataset.card, -Number(state.program.goal), 'redeem', 'Premio canjeado');
+          toast('Premio canjeado.');
+        }
+        if(action === 'view') window.open(cardUrl(btn.dataset.token), '_blank', 'noopener');
+        if(action === 'copy'){
+          await navigator.clipboard.writeText(cardUrl(btn.dataset.token));
+          toast('Enlace copiado.');
+        }
+      }catch(err){
+        toast(err.message || 'No se pudo completar la acción.', 'error');
+      }finally{
+        if(document.body.contains(btn)) btn.disabled = false;
+      }
+    });
+
+    boot();
+  </script>
+</body>
+</html>

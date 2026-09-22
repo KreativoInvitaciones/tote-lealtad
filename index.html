@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#8B9274" />
+  <title>Tote y Punto | Tarjeta de lealtad</title>
+  <style>
+    :root{
+      --olive:#8B9274;
+      --ink:#111111;
+      --paper:#F6F4EE;
+      --muted:#6B6B63;
+      --line:rgba(17,17,17,.12);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:linear-gradient(180deg,#111 0 34%,#ECE9DF 34% 100%);
+      color:var(--ink);
+      display:grid;
+      place-items:center;
+      padding:24px 14px;
+    }
+    .wrap{width:min(100%,430px)}
+    .brand{
+      color:white;
+      text-align:center;
+      margin-bottom:18px;
+    }
+    .brand-mark{
+      width:72px;height:72px;border-radius:50%;margin:0 auto 10px;
+      display:grid;place-items:center;
+      background:var(--olive);color:var(--ink);
+      font-size:34px;box-shadow:0 12px 30px rgba(0,0,0,.25);overflow:hidden
+    }
+    .brand-mark img{width:100%;height:100%;object-fit:cover;display:block}
+    .brand h1{font-size:25px;margin:0;font-weight:800;letter-spacing:.02em}
+    .brand p{margin:5px 0 0;color:#d9d9d9;font-size:13px}
+    .card{
+      background:var(--paper);
+      border-radius:28px;
+      padding:24px;
+      box-shadow:0 24px 60px rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.4);
+    }
+    .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+    .name{font-size:28px;font-weight:800;margin:6px 0 2px}
+    .program{font-size:14px;color:var(--muted);margin-bottom:22px}
+    .stamps{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:8px 0 18px}
+    .stamp{
+      aspect-ratio:1/1;border-radius:50%;display:grid;place-items:center;
+      border:2px solid var(--olive);font-size:24px;font-weight:900;
+      background:transparent;color:var(--olive)
+    }
+    .stamp.on{background:var(--olive);color:var(--ink)}
+    .progress{display:flex;justify-content:space-between;align-items:end;gap:14px;padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+    .progress strong{font-size:28px;line-height:1}
+    .progress span{font-size:13px;color:var(--muted);text-align:right}
+    .reward{margin-top:18px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px}
+    .reward small{display:block;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px}
+    .reward b{font-size:17px}
+    .status{margin-top:14px;padding:12px 14px;border-radius:14px;background:rgba(139,146,116,.18);font-size:14px;font-weight:700;text-align:center}
+    .status.ready{background:#111;color:#fff}
+    .foot{font-size:11px;color:#777;text-align:center;margin-top:14px}
+    .error{background:#fff1f1;color:#8a1f1f;padding:14px;border-radius:14px;font-size:14px}
+    .loading{color:white;text-align:center;padding:22px 0}
+    button{font:inherit}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="brand">
+      <div class="brand-mark" id="brandLogoMark">👜</div>
+      <h1 id="brandName">Tote y Punto</h1>
+      <p>Tu tarjeta de cliente frecuente</p>
+    </section>
+
+    <div id="loading" class="loading">Cargando tu tarjeta…</div>
+    <section id="card" class="card" hidden>
+      <div class="eyebrow">Tarjeta de cliente frecuente</div>
+      <div class="name" id="customerName">—</div>
+      <div class="program" id="programName">—</div>
+
+      <div class="stamps" id="stamps"></div>
+
+      <div class="progress">
+        <strong id="progressText">0 de 5</strong>
+        <span id="remainingText">—</span>
+      </div>
+
+      <div class="reward">
+        <small>Tu recompensa</small>
+        <b id="rewardText">—</b>
+      </div>
+
+      <div id="status" class="status">—</div>
+      <div class="foot">Presenta esta tarjeta al realizar tu compra.</div>
+    </section>
+
+    <div id="error" class="error" hidden></div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = 'https://oeovncqbdzqqrhmcwxud.supabase.co';
+    const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_JWHTwtIX9QYuJWXoGoAxsw_VFz47Ctw';
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+    const $ = (id) => document.getElementById(id);
+
+    function renderStamps(progress, goal){
+      const wrap = $('stamps');
+      wrap.innerHTML = '';
+      const p = Math.max(0, Math.floor(Number(progress || 0)));
+      const g = Math.max(1, Math.floor(Number(goal || 1)));
+      for(let i=1;i<=g;i++){
+        const s = document.createElement('div');
+        s.className = 'stamp' + (i <= p ? ' on' : '');
+        s.textContent = i <= p ? '✓' : '';
+        wrap.appendChild(s);
+      }
+    }
+
+    async function loadCard(){
+      try{
+        if(!token) throw new Error('Este enlace de tarjeta no es válido.');
+        const { data, error } = await client.rpc('get_public_loyalty_card', { p_token: token });
+        if(error) throw error;
+        if(!data || data.length === 0) throw new Error('No encontramos esta tarjeta o ya no está activa.');
+
+        const d = data[0];
+        const goal = Number(d.goal || 0);
+        const progress = Number(d.progress || 0);
+        const remaining = Math.max(0, goal - progress);
+
+        document.documentElement.style.setProperty('--olive', d.primary_color || '#8B9274');
+        document.documentElement.style.setProperty('--ink', d.secondary_color || '#111111');
+
+        $('brandName').textContent = d.business_name || 'Tote y Punto';
+        const logoMark = $('brandLogoMark');
+        if(d.logo_url){
+          logoMark.innerHTML = `<img src="${d.logo_url}" alt="Logo de ${d.business_name || 'negocio'}">`;
+        }else{
+          logoMark.textContent = '👜';
+        }
+        $('customerName').textContent = d.customer_name || 'Cliente';
+        $('programName').textContent = d.program_name || 'Cliente frecuente';
+        $('progressText').textContent = `${progress} de ${goal}`;
+        $('remainingText').textContent = remaining > 0
+          ? `Te ${remaining === 1 ? 'falta' : 'faltan'} ${remaining} ${remaining === 1 ? 'compra' : 'compras'}`
+          : 'Meta completada';
+        $('rewardText').textContent = d.reward_text || 'Recompensa disponible';
+
+        renderStamps(progress, goal);
+
+        const status = $('status');
+        if(d.reward_available){
+          status.textContent = '🎁 Premio disponible';
+          status.classList.add('ready');
+        }else{
+          status.textContent = 'Sigue sumando compras para desbloquear tu recompensa';
+        }
+
+        $('loading').hidden = true;
+        $('card').hidden = false;
+      }catch(err){
+        $('loading').hidden = true;
+        $('error').hidden = false;
+        $('error').textContent = err.message || 'No se pudo cargar la tarjeta.';
+      }
+    }
+
+    loadCard();
+    window.addEventListener('focus', loadCard);
+    document.addEventListener('visibilitychange', () => { if(!document.hidden) loadCard(); });
+    setInterval(loadCard, 15000);
+  </script>
+</body>
+</html>
