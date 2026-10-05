@@ -155,7 +155,45 @@
         <div id="loginError" class="login-error hidden"></div>
       </form>
     </section>
+<section id="recoveryView" class="login-wrap hidden">
+  <form id="recoveryForm" class="login-card">
+    <div class="mark" style="margin-bottom:16px">🔐</div>
+    <h2>Nueva contraseña</h2>
+    <p>Escribe y confirma tu nueva contraseña.</p>
 
+    <div class="field">
+      <label for="newPassword">Nueva contraseña</label>
+      <input
+        id="newPassword"
+        class="input"
+        type="password"
+        autocomplete="new-password"
+        required
+        minlength="8"
+        placeholder="••••••••"
+      />
+    </div>
+
+    <div class="field">
+      <label for="confirmPassword">Confirmar contraseña</label>
+      <input
+        id="confirmPassword"
+        class="input"
+        type="password"
+        autocomplete="new-password"
+        required
+        minlength="8"
+        placeholder="••••••••"
+      />
+    </div>
+
+    <button id="recoveryBtn" class="btn" style="width:100%" type="submit">
+      Guardar contraseña
+    </button>
+
+    <div id="recoveryError" class="login-error hidden"></div>
+  </form>
+</section>
     <section id="appView" class="hidden">
       <header class="topbar">
         <div class="brand">
@@ -271,7 +309,17 @@
     const SUPABASE_URL = 'https://oeovncqbdzqqrhmcwxud.supabase.co';
     const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_JWHTwtIX9QYuJWXoGoAxsw_VFz47Ctw';
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  let recoveryMode = false;
 
+client.auth.onAuthStateChange((event, session) => {
+  if (event === 'PASSWORD_RECOVERY') {
+    recoveryMode = true;
+
+    document.getElementById('loginView')?.classList.add('hidden');
+    document.getElementById('appView')?.classList.add('hidden');
+    document.getElementById('recoveryView')?.classList.remove('hidden');
+  }
+});
     const state = {
       session:null,
       profile:null,
@@ -554,7 +602,52 @@
         toast(err.message || 'No se pudo cargar el panel.', 'error');
       }
     }
+$('recoveryForm').addEventListener('submit', async e => {
+  e.preventDefault();
 
+  const password = $('newPassword').value;
+  const confirmPassword = $('confirmPassword').value;
+  const errorBox = $('recoveryError');
+  const btn = $('recoveryBtn');
+
+  errorBox.classList.add('hidden');
+  errorBox.textContent = '';
+
+  if (password !== confirmPassword) {
+    errorBox.textContent = 'Las contraseñas no coinciden.';
+    errorBox.classList.remove('hidden');
+    return;
+  }
+
+  if (password.length < 8) {
+    errorBox.textContent = 'La contraseña debe tener al menos 8 caracteres.';
+    errorBox.classList.remove('hidden');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+
+  const { error } = await client.auth.updateUser({
+    password: password
+  });
+
+  if (error) {
+    errorBox.textContent = error.message;
+    errorBox.classList.remove('hidden');
+    btn.disabled = false;
+    btn.textContent = 'Guardar contraseña';
+    return;
+  }
+
+  recoveryMode = false;
+
+  alert('Contraseña actualizada correctamente.');
+
+  await client.auth.signOut();
+
+  window.location.href = 'admin.html';
+});
     $('loginForm').addEventListener('submit', async e => {
       e.preventDefault();
       $('loginError').classList.add('hidden');
