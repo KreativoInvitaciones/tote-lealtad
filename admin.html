@@ -57,7 +57,27 @@
     .hero-main.has-media .hero-copy{max-width:62%}
     .summary-media{position:absolute;right:0;top:0;width:38%;height:58%;overflow:hidden;border-bottom-left-radius:78px;z-index:1;background:#eee}
     .summary-media img{display:block;width:100%;height:100%;object-fit:cover}
+/* Galería especial para LOVET */
+.summary-media.lovet-gallery{
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  grid-template-rows:repeat(3,1fr);
+  gap:6px;
+  padding:6px;
+  background:#fff;
+  border-bottom-left-radius:32px;
+}
 
+.summary-media.lovet-gallery > img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  border-radius:12px;
+}
+
+.summary-media.lovet-gallery > img:first-child{
+  grid-row:1 / 4;
+}
     .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:850}
     .hero h2{margin:7px 0 4px;font-size:30px;letter-spacing:-.04em}
     .hero .sub{color:var(--muted);font-size:14px;margin:0}
@@ -398,19 +418,45 @@ client.auth.onAuthStateChange((event, session) => {
       }else{
         logoMark.textContent = '👜';
       }
-      const heroMain = $('heroMain');
-      const summaryMedia = $('summaryMedia');
-      const summaryImage = $('summaryImage');
-      if(data.cover_image_url){
-        summaryImage.src = data.cover_image_url;
-        summaryImage.alt = `Producto de ${data.name}`;
-        summaryMedia.classList.remove('hidden');
-        heroMain.classList.add('has-media');
-      }else{
-        summaryImage.removeAttribute('src');
-        summaryMedia.classList.add('hidden');
-        heroMain.classList.remove('has-media');
-      }
+     const heroMain = $('heroMain');
+const summaryMedia = $('summaryMedia');
+
+if ((data.slug || '').toLowerCase() === 'lovet') {
+
+  summaryMedia.classList.remove('hidden');
+  summaryMedia.classList.add('lovet-gallery');
+
+  summaryMedia.innerHTML = `
+    <img src="${data.cover_image_url || ''}" alt="LOVET perro 1">
+    <img src="${data.image_2_url || ''}" alt="LOVET perro 2">
+    <img src="${data.image_3_url || ''}" alt="LOVET perro 3">
+    <img src="${data.image_4_url || ''}" alt="LOVET perro 4">
+  `;
+
+  heroMain.classList.add('has-media');
+
+} else {
+
+  summaryMedia.classList.remove('lovet-gallery');
+
+  if (data.cover_image_url) {
+    summaryMedia.innerHTML = `
+      <img
+        id="summaryImage"
+        src="${data.cover_image_url}"
+        alt="Producto de ${data.name || ''}"
+      >
+    `;
+
+    summaryMedia.classList.remove('hidden');
+    heroMain.classList.add('has-media');
+
+  } else {
+    summaryMedia.innerHTML = '<img id="summaryImage" alt="Imagen del negocio">';
+    summaryMedia.classList.add('hidden');
+    heroMain.classList.remove('has-media');
+  }
+}
       $('primaryColor').value = data.primary_color || '#8B9274';
       $('secondaryColor').value = data.secondary_color || '#111111';
       document.title = `Panel | ${data.name}`;
