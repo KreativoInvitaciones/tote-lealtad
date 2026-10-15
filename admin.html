@@ -154,7 +154,148 @@
       .summary-media img{object-position:center center}
       .hero-main.has-media .stats{margin-top:34px}
     }
-  </style>
+  /* =========================
+   TEMA EXCLUSIVO LOVET
+   ========================= */
+
+body.theme-lovet{
+  --bg:#F7F2EF;
+  --card:#FFFDFC;
+  --ink:#574A46;
+  --muted:#897772;
+  --line:#E9D9D5;
+  --accent:#D93B5B;
+  --shadow:0 16px 45px rgba(93,70,63,.08);
+
+  background:#F7F2EF;
+}
+
+/* Logo */
+body.theme-lovet .mark{
+  background:#FFFFFF;
+  border:1px solid #E9D9D5;
+  color:#786860;
+}
+
+body.theme-lovet .mark img{
+  object-fit:contain;
+  padding:2px;
+}
+
+/* Nombre y títulos */
+body.theme-lovet .brand h1{
+  color:#574A46;
+}
+
+body.theme-lovet .hero h2{
+  color:#D93B5B;
+}
+
+body.theme-lovet .eyebrow{
+  color:#786860;
+}
+
+/* Tarjetas generales */
+body.theme-lovet .panel{
+  background:#FFFDFC;
+  border-color:#E9D9D5;
+  box-shadow:0 10px 30px rgba(93,70,63,.05);
+}
+
+/* Resumen */
+body.theme-lovet .stat{
+  background:#FBF5F2;
+  border-color:#EDDEDA;
+}
+
+body.theme-lovet .stat b{
+  color:#574A46;
+}
+
+/* Galería de perros */
+body.theme-lovet .summary-media.lovet-gallery{
+  background:#FFFFFF;
+  border-bottom-left-radius:28px;
+}
+
+/* Programa */
+body.theme-lovet .program-card{
+  background:linear-gradient(135deg,#FFFDFC 0%,#FFF6F7 100%);
+}
+
+body.theme-lovet .program-card .goal{
+  color:#D93B5B;
+}
+
+body.theme-lovet .program-card .reward{
+  color:#786860;
+}
+
+/* Botón editar */
+body.theme-lovet #editProgramBtn{
+  background:#FFFFFF;
+  color:#D93B5B;
+  border:1px solid #D93B5B;
+}
+
+/* Nuevo cliente */
+body.theme-lovet #newCustomerBtn{
+  background:#786860;
+  color:#FFFFFF;
+}
+
+/* Cerrar sesión */
+body.theme-lovet #logoutBtn{
+  background:#FFFFFF;
+  color:#665752;
+  border-color:#CDBDB8;
+}
+
+/* Selector */
+body.theme-lovet .business-switcher{
+  background:#FFFFFF;
+  color:#574A46;
+  border-color:#E3D4D0;
+}
+
+/* Campos */
+body.theme-lovet .input{
+  border-color:#E3D6D2;
+}
+
+body.theme-lovet .input:focus{
+  border-color:#D93B5B;
+  box-shadow:0 0 0 3px rgba(217,59,91,.12);
+}
+
+/* Progreso */
+body.theme-lovet .progress-bar i{
+  background:#D93B5B;
+}
+
+/* Botones principales dentro del panel */
+body.theme-lovet .customer .btn:not(.secondary):not(.ghost):not(.danger),
+body.theme-lovet .modal .btn:not(.secondary):not(.ghost):not(.danger){
+  background:#786860;
+}
+
+/* Móvil */
+@media (max-width:620px){
+
+  body.theme-lovet .summary-media.lovet-gallery{
+    width:44%;
+    height:50%;
+    padding:4px;
+    gap:4px;
+    border-radius:0 18px 0 24px;
+    box-shadow:none;
+  }
+
+  body.theme-lovet .summary-media.lovet-gallery > img{
+    border-radius:9px;
+  }
+}</style>
+  
 </head>
 <body>
   <main class="shell">
@@ -406,12 +547,14 @@ client.auth.onAuthStateChange((event, session) => {
       const { data, error } = await query.single();
       if(error) throw error;
       state.business = data;
+      const isLovet = (data.slug || '').toLowerCase() === 'lovet';
+document.body.classList.toggle('theme-lovet', isLovet);
       if(state.profile.role === 'master') {
         localStorage.setItem('kreativo_selected_business', data.id);
         $('businessSwitcher').value = data.id;
       }
       document.documentElement.style.setProperty('--accent', data.primary_color || '#8B9274');
-      $('businessName').textContent = data.name;
+      $('businessName').textContent = isLovet ? 'LOVET' : data.name;
       const logoMark = $('businessLogoMark');
       if(data.logo_url){
         logoMark.innerHTML = `<img src="${esc(data.logo_url)}" alt="Logo de ${esc(data.name)}">`;
@@ -641,7 +784,10 @@ if ((data.slug || '').toLowerCase() === 'lovet') {
         await loadBusiness();
         await loadProgram();
         $('roleBadge').textContent = state.profile.role === 'master' ? 'Kreativo · Master' : (state.profile.role === 'owner' ? 'Propietario' : 'Empleado');
-        $('welcomeTitle').textContent = state.business.name;
+       $('welcomeTitle').textContent =
+  state.business.slug === 'lovet'
+    ? 'LOVET'
+    : state.business.name;
         await loadCustomers();
       }catch(err){
         console.error(err);
