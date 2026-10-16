@@ -92,6 +92,24 @@
       background:transparent;color:var(--accent)
     }
     .stamp.on{background:var(--accent);color:#fff}
+    .stamp.lovet-stamp{
+  border:none;
+  border-radius:0;
+  background:transparent;
+  aspect-ratio:1/1;
+  padding:0;
+}
+
+.stamp.lovet-stamp.on{
+  background:transparent;
+}
+
+.stamp.lovet-stamp img{
+  width:100% !important;
+  height:100% !important;
+  object-fit:contain;
+  display:block;
+}
     .progress{display:flex;justify-content:space-between;align-items:end;gap:14px;padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
     .progress strong{font-size:28px;line-height:1}
     .progress span{font-size:13px;color:var(--muted);text-align:right}
@@ -155,18 +173,33 @@
 
     const $ = (id) => document.getElementById(id);
 
-    function renderStamps(progress, goal){
-      const wrap = $('stamps');
-      wrap.innerHTML = '';
-      const p = Math.max(0, Math.floor(Number(progress || 0)));
-      const g = Math.max(1, Math.floor(Number(goal || 1)));
-      for(let i=1;i<=g;i++){
-        const s = document.createElement('div');
-        s.className = 'stamp' + (i <= p ? ' on' : '');
-        s.textContent = i <= p ? '✓' : '';
-        wrap.appendChild(s);
-      }
+function renderStamps(progress, goal, isLovet = false){
+  const wrap = $('stamps');
+  wrap.innerHTML = '';
+
+  const p = Math.max(0, Math.floor(Number(progress || 0)));
+  const g = Math.max(1, Math.floor(Number(goal || 1)));
+
+  for(let i = 1; i <= g; i++){
+    const s = document.createElement('div');
+    s.className = 'stamp' + (i <= p ? ' on' : '');
+if(isLovet) s.classList.add('lovet-stamp');
+    if(isLovet){
+      const img = document.createElement('img');
+      img.src = 'https://kreativoinvitaciones.github.io/tote-lealtad/lovet-sello-huella.png';
+      img.alt = 'Sello';
+      img.style.width = '88%';
+      img.style.height = '88%';
+      img.style.objectFit = 'contain';
+      img.style.opacity = i <= p ? '1' : '.30';
+      s.appendChild(img);
+    }else{
+      s.textContent = i <= p ? '✓' : '';
     }
+
+    wrap.appendChild(s);
+  }
+}
 
     async function loadCard(){
       try{
@@ -212,7 +245,11 @@ if ((d.business_name || '').toLowerCase() === 'la tinta negra') {
           : 'Meta completada';
         $('rewardText').textContent = d.reward_text || 'Recompensa disponible';
 
-        renderStamps(progress, goal);
+     renderStamps(
+  progress,
+  goal,
+  (d.business_name || '').toLowerCase().includes('lovet')
+);
 
         const status = $('status');
         if(d.reward_available){
