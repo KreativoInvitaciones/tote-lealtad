@@ -124,6 +124,52 @@
     .error{background:#fff1f1;color:#8a1f1f;padding:14px;border-radius:14px;font-size:14px}
     .loading{color:white;text-align:center;padding:22px 0}
     button{font:inherit}
+    /* TARJETA EXCLUSIVA LOVET */
+body.theme-lovet-card{
+  background:linear-gradient(
+    180deg,
+    #F7F2EF 0 34%,
+    #EFE7E1 34% 100%
+  );
+  color:#574A46;
+}
+
+body.theme-lovet-card .brand{
+  color:#574A46;
+}
+
+body.theme-lovet-card .brand h1{
+  color:#D83858;
+}
+
+body.theme-lovet-card .brand p{
+  color:#897772;
+}
+
+body.theme-lovet-card .card{
+  background:#FFFDFC;
+  border-color:#E9D9D5;
+  box-shadow:0 24px 60px rgba(93,70,63,.16);
+}
+
+body.theme-lovet-card .name,
+body.theme-lovet-card .progress strong{
+  color:#574A46;
+}
+
+body.theme-lovet-card .reward{
+  background:#FFF8F8;
+  border-color:#E9D9D5;
+}
+
+body.theme-lovet-card .reward small{
+  color:#786860;
+}
+
+body.theme-lovet-card .status{
+  background:#786860;
+  color:#FFFFFF;
+}
   </style>
 </head>
 <body>
@@ -219,6 +265,10 @@ if(isLovet) s.classList.add('lovet-stamp');
         if(!data || data.length === 0) throw new Error('No encontramos esta tarjeta o ya no está activa.');
 
         const d = data[0];
+        document.body.classList.toggle(
+  'theme-lovet-card',
+  (d.business_name || '').toLowerCase().includes('lovet')
+);
         const goal = Number(d.goal || 0);
         const progress = Number(d.progress || 0);
         const remaining = Math.max(0, goal - progress);
