@@ -169,7 +169,17 @@
     const params = new URLSearchParams(window.location.search);
     const token = params.get('token');
 
-    const client = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+   const client = supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY,
+  {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false
+    }
+  }
+);
 
     const $ = (id) => document.getElementById(id);
 
